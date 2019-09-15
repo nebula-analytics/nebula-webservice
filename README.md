@@ -1,4 +1,4 @@
-Project Nebula Analytics/Eve-Webservice
+Project Nebula Analytics/Nebula-Webservice
 ========
 
 Setup
