@@ -8,23 +8,9 @@ MONGO_PASSWORD = ''
 MONGO_DBNAME = 'nebula'
 RESOURCE_METHODS = ['GET']
 
-PAGINATION = True
+PAGINATION = False
 
-# books = {
-# 	'schema': {
-# 		'title': {
-# 			'type': 'string'
-# 		}
-# 	}
-# }
-
-# views = {
-# 	'schema': {
-# 		'doc_id': {
-# 			'type': 'string'
-# 		}
-# 	}
-# }
+# MongoDB Query to get the most recent 30mins of data.
 # db.views.find({at: {$gt: (new Date(ISODate().getTime() - 1000*60*30))  }},{at:1, _id:0})
 
 joint = {
@@ -61,8 +47,6 @@ joint = {
 
 
 DOMAIN = {
-	# 'books': books,
-	# 'views': views,
 	'joint': joint
 }
 
