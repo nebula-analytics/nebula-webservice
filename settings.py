@@ -1,18 +1,18 @@
 import os
 from datetime import datetime, timedelta
 
-_DB_HOST = os.getenv("mongo_host", "localhost")
-_DB_PORT = int(os.getenv("mongo_port", "27017"))
-_DB_USERNAME = os.getenv("mongo_user", "")
-_DB_PASSWORD = os.getenv("mongo_pass", "")
-_DB_DBNAME = 'nebula'
+_host = os.getenv("mongo_host", "localhost")
+_host_port = int(os.getenv("mongo_port", "27017"))
+_host_username = os.getenv("mongo_user", "")
+_host_password = os.getenv("mongo_pass", "")
+_host_dbname = 'nebula'
 
-LOGIN_STR = f"{_DB_USERNAME}:{_DB_PASSWORD}@" if _DB_USERNAME or _DB_PASSWORD else ""
-MONGO_URI = f"mongodb://{LOGIN_STR}{_DB_HOST}:{_DB_PORT}"
+_host_login_str = f"{_host_username}:{_host_password}@" if _host_username or _host_password else ""
+MONGO_URI = f"mongodb://{_host_login_str}{_host}:{_host_port}"
 
 RESOURCE_METHODS = ['GET']
-VIEW_COLLECTION = "views"
-BOOK_COLLECTION = "books"
+view_collection_name = "views"
+book_collection_name = "books"
 
 PAGINATION = False
 
@@ -21,13 +21,13 @@ PAGINATION = False
 
 joint = {
     'datasource': {
-        'source': VIEW_COLLECTION,
+        'source': view_collection_name,
         'aggregation': {
             'pipeline': [
                 {"$match": {"at": {"$gte": datetime.now() - timedelta(minutes=30)}}},
                 {"$group": {"_id": "$doc_id", "count": {"$sum": 1}, "last_viewed": {"$max": "$at"}}},
                 {"$lookup": {
-                    "from": BOOK_COLLECTION,
+                    "from": book_collection_name,
                     "localField": "_id",
                     "foreignField": "doc_id",
                     "as": "matched"
