@@ -1,10 +1,15 @@
+import os
 from datetime import datetime, timedelta
 
-MONGO_HOST = 'localhost'
-MONGO_PORT = 27017
-MONGO_USERNAME = ''
-MONGO_PASSWORD = ''
-MONGO_DBNAME = 'nebula'
+_DB_HOST = os.getenv("mongo_host", "localhost")
+_DB_PORT = int(os.getenv("mongo_port", "27017"))
+_DB_USERNAME = os.getenv("mongo_user", "")
+_DB_PASSWORD = os.getenv("mongo_pass", "")
+_DB_DBNAME = 'nebula'
+
+LOGIN_STR = f"{_DB_USERNAME}:{_DB_PASSWORD}@" if _DB_USERNAME or _DB_PASSWORD else ""
+MONGO_URI = f"mongodb://{LOGIN_STR}{_DB_HOST}:{_DB_PORT}"
+
 RESOURCE_METHODS = ['GET']
 VIEW_COLLECTION = "views"
 BOOK_COLLECTION = "books"
@@ -49,5 +54,8 @@ joint = {
 }
 
 DOMAIN = {
-    'joint': joint
+    'joint': joint,
+    'views': {},
+    'books': {},
 }
+
