@@ -3,13 +3,15 @@ from datetime import datetime, timedelta
 from eve import Eve
 from flask_cors import CORS
 
-from utils.ConfigMap import ConfigMap
+from utils.ConfigMap import ConfigMap, add_discovery_path
 
+add_discovery_path("./eve.config.yaml")
 config = ConfigMap.get_singleton().eve.dict
 
 """
 We need to override the domain otherwise we can't pass a datetime
 """
+print(config)
 config["DOMAIN"]["joint"] = {
     'datasource': {
         'source': "views",
