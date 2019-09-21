@@ -21,37 +21,7 @@ PAGINATION = False
 # db.views.find({at: {$gt: (new Date(ISODate().getTime() - 1000*60*30))  }},{at:1, _id:0})
 
 joint = {
-    'datasource': {
-        'source': view_collection_name,
-        'aggregation': {
-            'pipeline': [
-                {"$match": {"at": {"$gte": datetime.now() - timedelta(minutes=30)}}},
-                {"$group": {"_id": "$doc_id", "count": {"$sum": 1}, "last_viewed": {"$max": "$at"}}},
-                {"$lookup": {
-                    "from": book_collection_name,
-                    "localField": "_id",
-                    "foreignField": "doc_id",
-                    "as": "matched"
-                }},
-                {"$match": {"matched": {"$not": {"$eq": []}}}},
-                {"$match": {"matched.status": {"$eq": "processed"}}},
-                {"$unwind": "$matched"},
-                {"$addFields": {"matched.count": "$count", "matched.last_view": "$last_viewed"}},
-                {"$replaceRoot": {"newRoot": "$matched"}},
-                {"$project": {
-                    "doc_id": "$doc_id",
-                    "title": "$title",
-                    "identifiers": "$identifier",
-                    "language": "$lang3",
-                    "record_type": "$_type",
-                    "extra_fields": "$extra_fields",
-                    "count": "$count",
-                    "last_view": "$last_view"
-                }},
-                {"$sort": {"last_view": -1}}
-            ]
-        }
-    }
+    ma
 }
 
 DOMAIN = {
