@@ -1,27 +1,3 @@
-analytics:
-  view_id: "<Set this>"
-  path_to_credentials: "<location of oauth credentials>"
-
-primo:
-  host: "<The primo api url ending in /pnxs>"
-  contexts: ["L", "PC"]
-  api_key: "<Key provided by Primo>"
-  common_fields: ['title', 'identifier']
-  excluded_fields: ["_id"]
-  name_mapping: {"lang3": "language", "_type":"record_type"}
-  key_by: "pnx_id"
-
-database:
-  mongodb:
-    username: ""
-    password: ""
-    host: "localhost:27017"
-    database: "nebula"
-    collections:
-      views: "views"
-      books: "books"
-      utils: "utils"
-
 eve:
   MONGO_URI: ''
   MONGO_HOST: "localhost"
@@ -32,34 +8,4 @@ eve:
   MONGO_DBNAME: "nebula"
 
   PAGINATION: True
-
-
-celery:
-  broker_url: 'amqp://localhost'
-
-  task_serializer: 'json'
-  result_serializer: 'json'
-  accept_content: ['json']
-  timezone: 'Australia/Melbourne'
-
-  task_routes: {
-    schedule.request_record: {queue: 'nebula.import'},
-    schedule.sync*: {queue: 'nebula.express'}
-  }
-
-  task_annotations: {
-    'schedule.request_record': {'rate_limit': '5/s'},
-  }
-
-  beat_schedule: {
-    Synchronize (Analytics -> Database): {
-      'task': 'schedule.sync_views',
-      'schedule': 10.0,
-      'args':[]
-    },
-    Synchronize (Primo -> Database): {
-      'task': 'schedule.sync_books',
-      'schedule': 10.0,
-      'args':[]
-    }
-  }
+  PAGINATION_LIMIT: 200
