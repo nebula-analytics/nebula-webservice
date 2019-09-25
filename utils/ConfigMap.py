@@ -61,7 +61,7 @@ class ConfigMap:
         self.__values__ = values
         self.__name__ = key
         self.__parents__ = [*parents, key]
-        self.__path__ = ".".join(self.__parents__)
+        self.__path__ = "_".join(self.__parents__)
 
     def __dir__(self) -> Iterable[str]:
         """
@@ -126,7 +126,7 @@ class ConfigMap:
                 A config dictionary or value
 
         """
-        environ_key = f"{self.__path__}.{item}"
+        environ_key = f"{self.__path__}_{item}"
         if environ_key in os.environ:
             value = os.getenv(environ_key)
             if item in self.__values__ and isinstance(self.__values__[item], dict):

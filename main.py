@@ -1,4 +1,6 @@
+import sys
 from datetime import datetime, timedelta
+import warnings
 
 from eve import Eve
 from flask_cors import CORS
@@ -18,6 +20,7 @@ config["DOMAIN"]["joint"] = {
         'aggregation': {
             'pipeline': [
                 {"$match": {"at": {"$gte": datetime.now() - timedelta(minutes=30)}}},
+                # {"$match": "$where$"},
                 {"$group": {"_id": "$doc_id", "count": {"$sum": 1}, "last_viewed": {"$max": "$at"}}},
                 {"$lookup": {
                     "from": "books",

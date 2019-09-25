@@ -1,4 +1,4 @@
-FROM tiangolo/uwsgi-nginx-flask
+FROM tiangolo/uwsgi-nginx-flask:python3.7
 WORKDIR /app
 
 COPY requirements.txt /app/
