@@ -43,7 +43,7 @@ config["DOMAIN"]["joint"] = {
                     "count": "$count",
                     "last_view": "$last_view"
                 }},
-                {"$sort": {"last_view": -1}}
+                {"$sort": {"last_view": -1, "title": -1, "doc_id": -1}}
             ]
         }
     }
