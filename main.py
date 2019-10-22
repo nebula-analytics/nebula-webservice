@@ -41,7 +41,8 @@ config["DOMAIN"]["joint"] = {
                     "record_type": "$_type",
                     "extra_fields": "$extra_fields",
                     "count": "$count",
-                    "last_view": "$last_view"
+                    "last_view": "$last_view",
+                    "links": "$extra_fields.delivery.link"
                 }},
                 {"$sort": {"last_view": -1, "title": -1, "doc_id": -1}}
             ]
