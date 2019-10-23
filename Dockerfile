@@ -1,13 +1,21 @@
-FROM tiangolo/uwsgi-nginx-flask:python3.7
+FROM python:3.7.5-alpine3.10
 
-RUN groupadd -g 999 appuser && \
-    useradd -r -u 999 -g appuser appuser
+RUN adduser -D appuser
 
-WORKDIR /app
+WORKDIR /home/appuser
 
-COPY requirements.txt /app/
+RUN apk update && apk add make automake gcc g++ subversion python3-dev libressl-dev
 
-RUN pip install -r requirements.txt
+RUN python -m venv venv
+
+RUN venv/bin/pip install gunicorn
+
+COPY requirements.txt ./
+RUN venv/bin/pip install --no-cache-dir -r  ./requirements.txt
+
+COPY ./ ./
+
+RUN chown -R appuser:appuser ./
 USER appuser
 
-COPY . /app
+CMD source venv/bin/activate && gunicorn -b :80 main:app
