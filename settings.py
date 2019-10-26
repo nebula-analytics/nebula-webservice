@@ -1,13 +1,19 @@
+import os
 from datetime import datetime, timedelta
 
-MONGO_HOST = 'localhost'
-MONGO_PORT = 27017
-MONGO_USERNAME = ''
-MONGO_PASSWORD = ''
-MONGO_DBNAME = 'nebula'
+_host = os.getenv("mongo_host", "localhost")
+_host_port = int(os.getenv("mongo_port", "27017"))
+_host_username = os.getenv("mongo_user", "")
+_host_password = os.getenv("mongo_pass", "")
+_host_dbname = 'nebula'
+
+_host_login_str = f"{_host_username}:{_host_password}@" if _host_username or _host_password else ""
+MONGO_URI = f"mongodb://{_host_login_str}{_host}:{_host_port}"
+print(MONGO_URI)
+
 RESOURCE_METHODS = ['GET']
-VIEW_COLLECTION = "views"
-BOOK_COLLECTION = "books"
+view_collection_name = "views"
+book_collection_name = "books"
 
 PAGINATION = False
 
@@ -15,39 +21,12 @@ PAGINATION = False
 # db.views.find({at: {$gt: (new Date(ISODate().getTime() - 1000*60*30))  }},{at:1, _id:0})
 
 joint = {
-    'datasource': {
-        'source': VIEW_COLLECTION,
-        'aggregation': {
-            'pipeline': [
-                {"$match": {"at": {"$gte": datetime.now() - timedelta(minutes=30)}}},
-                {"$group": {"_id": "$doc_id", "count": {"$sum": 1}, "last_viewed": {"$max": "$at"}}},
-                {"$lookup": {
-                    "from": BOOK_COLLECTION,
-                    "localField": "_id",
-                    "foreignField": "doc_id",
-                    "as": "matched"
-                }},
-                {"$match": {"matched": {"$not": {"$eq": []}}}},
-                {"$match": {"matched.status": {"$eq": "processed"}}},
-                {"$unwind": "$matched"},
-                {"$addFields": {"matched.count": "$count", "matched.last_view": "$last_viewed"}},
-                {"$replaceRoot": {"newRoot": "$matched"}},
-                {"$project": {
-                    "doc_id": "$doc_id",
-                    "title": "$title",
-                    "identifiers": "$identifier",
-                    "language": "$lang3",
-                    "record_type": "$_type",
-                    "extra_fields": "$extra_fields",
-                    "count": "$count",
-                    "last_view": "$last_view"
-                }},
-                {"$sort": {"last_view": -1}}
-            ]
-        }
-    }
+    ma
 }
 
 DOMAIN = {
-    'joint': joint
+    'joint': joint,
+    'views': {},
+    'books': {},
 }
+

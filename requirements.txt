@@ -1,0 +1,3 @@
+PyYAML
+flask_cors
+eve
