@@ -1,8 +1,7 @@
-import sys
 from datetime import datetime, timedelta
-import warnings
 
 from eve import Eve
+from flask.json import jsonify
 from flask_cors import CORS
 
 from utils.ConfigMap import ConfigMap, add_discovery_path
@@ -52,6 +51,12 @@ config["DOMAIN"]["joint"] = {
 
 app = Eve(settings=config)
 CORS(app)
+
+
+@app.route("/application/config")
+def get_config():
+    return jsonify(ConfigMap.theme)
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0")
