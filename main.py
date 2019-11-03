@@ -12,7 +12,7 @@ config = ConfigMap.get_singleton().eve.dict
 """
 We need to override the domain otherwise we can't pass a datetime
 """
-print(config)
+""" TODO: REMOVE ASAP """
 config["DOMAIN"]["joint"] = {
     'datasource': {
         'source': "views",
@@ -22,7 +22,6 @@ config["DOMAIN"]["joint"] = {
             },
             'pipeline': [
                 {"$match": {"at": {"$gte": datetime.now() - timedelta(minutes=30)}}},
-                # {"$match": "$where$"},
                 {"$group": {"_id": "$doc_id", "count": {"$sum": 1}, "last_viewed": {"$max": "$at"}}},
                 {"$lookup": {
                     "from": "books",
@@ -95,12 +94,14 @@ def set_default_times(values: list):
 
 
 def pre_views_get_callback(endpoint: str, pipeline: list):
-    if endpoint == "views":
-        """"""
-        times = pipeline[0].get("$match").get("$and")
+    times = pipeline[0].get("$match", {}).get("$and", False)
+    if times:
         clean_bad_dates(times)
+        if endpoint == "stats" and not times:
+            pipeline.pop(0)
+            return
         set_default_times(times)
-    return
+    pass
 
 
 @app.route("/application/config")
@@ -109,7 +110,6 @@ def get_config():
 
 
 app.before_aggregation += pre_views_get_callback
-# app.after_aggregation += pre_views_get_callback
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0")

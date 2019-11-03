@@ -1,7 +1,8 @@
 schema:
-  v2:
-    books: &schema.v2.books
-      """ If you need to to add fields to the book object, do it here """
+  "v2":
+    books: &schema_v2_books
+      # If you need to to add fields to the book object, do it here
+      # Make sure to use $ifNull to ensure we don't discard books which don't have the field
       doc_id: $doc_id
       title: $title
       record_type: $_type
@@ -9,7 +10,7 @@ schema:
       language: $language
       significant_date: {$ifNull: [{$ifNull: [$extra_fields.date, $extra_fields.creationdate]},Unknown]}
       institution: {$ifNull: [{$ifNull: [$extra_fields.institution, $extra_fields.delivery_institution]},Unknown]}
-      subject: {$ifNull: [$extra_fields.subject, []]}
+      subjects: {$ifNull: [$extra_fields.subject, []]}
       thumbnails: {$ifNull: [{$filter: {as: link, cond: {$eq: [$$link.displayLabel, thumbnail]}, input: $extra_fields.delivery.link}},[] ]}
 
 eve:
@@ -19,13 +20,19 @@ eve:
         source: views
         aggregation:
           options:
+            # API v1 broke without this option
             allowDiskUse: yes
           pipeline:
+            # Match time period - start and end must be ISO format
+            # Defaults to last 30 minutes
             - $match:
                 $and:
                   - {at: {$gte: "$start"}}
                   - {at: {$lte: "$end"}}
-            - $group: {_id: $doc_id, count: {$sum: 1}, last_viewed: {$max: $at}}
+            # Group views for the same resource
+            - $group: {_id: $doc_id, count: {$max: $count}, last_viewed: {$max: $at}, context: {$first: $context},
+                       locations: {$addToSet: {$concat: [$city, ", ", $country] }}}
+            # Find matching books
             - $lookup:
                 as: matched
                 from: books
@@ -33,11 +40,38 @@ eve:
                 pipeline:
                   - {$match: {$expr: {$eq: [ $doc_id, $$id ]}}}
                   - {$match: {status: {$eq: processed}}}
-                  - {$project: *schema.v2.books}
-            - $addFields: {matched.count: $count, matched.last_view: $last_viewed}
+                  - {$project: *schema_v2_books}
+            # Move fields we want to keep
+            - $addFields: {matched.count: $count, matched.last_view: $last_viewed, matched.locations: $locations, context: $context}
+            # Move book fields to root
             - $unwind: {path: $matched, preserveNullAndEmptyArrays: false}
             - $replaceRoot: {newRoot: $matched}
+            # Ensure Determinism
+            - $sort: {last_view: -1, record_type: 1, doc_id: 1}
 
+    stats:
+      datasource:
+        source: views
+        aggregation:
+          pipeline:
+            - $match:
+                $and:
+                  - {at: {$gte: "$start"}}
+                  - {at: {$lte: "$end"}}
+            - $group:
+                _id: $country
+                cities: {$addToSet: $city}
+                count: {$avg: $count}
+                documents: { $addToSet: $doc_id}
+                local_records: {$sum: {$convert: {input: {$eq: [$context, L]}, to: 16}}}
+                primo_records: {$sum: {$convert: {input: {$eq: [$context, PC]}, to: 16}}}
+            - $project:
+                average_view_count: $count
+                country: $country
+                number_of_lookups: {$size: $documents}
+                number_of_sublocations: {$size: $cities}
+                percent_rmit_owned: {$concat: [{$toString: {$multiply: [{$cond: [{$gt: [$local_records,0]}, {$divide: [$local_records, {$sum: [$local_records, $primo_records]}]},0]}, 100]}}, '%']}
+                percent_rmit_owned_float: {$cond: [{$gt: [$local_records, 0]},{$divide: [$local_records, {$sum: [$local_records,$primo_records]}]}, 0]}
 
 
 
