@@ -48,7 +48,6 @@ eve:
             - $replaceRoot: {newRoot: $matched}
             # Ensure Determinism
             - $sort: {last_view: -1, record_type: 1, doc_id: 1}
-
     stats:
       datasource:
         source: views
