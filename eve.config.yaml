@@ -1,12 +1,43 @@
+schema:
+  v2:
+    books: &schema.v2.books
+      """ If you need to to add fields to the book object, do it here """
+      doc_id: $doc_id
+      title: $title
+      record_type: $_type
+      identifiers: $identifier
+      language: $language
+      significant_date: {$ifNull: [{$ifNull: [$extra_fields.date, $extra_fields.creationdate]},Unknown]}
+      institution: {$ifNull: [{$ifNull: [$extra_fields.institution, $extra_fields.delivery_institution]},Unknown]}
+      subject: {$ifNull: [$extra_fields.subject, []]}
+      thumbnails: {$ifNull: [{$filter: {as: link, cond: {$eq: [$$link.displayLabel, thumbnail]}, input: $extra_fields.delivery.link}},[] ]}
+
 eve:
   DOMAIN:
-    viewed_books:
+    views:
       datasource:
-
         source: views
         aggregation:
-          pipeline: [
-          {"$group": {"_id": "$doc_id", "count": {"$sum": 1}, "last_viewed": {"$max": "$at"}}}
-          ]
-#      doc_id: {type: string}
-    books:
+          options:
+            allowDiskUse: yes
+          pipeline:
+            - $match:
+                $and:
+                  - {at: {$gte: "$start"}}
+                  - {at: {$lte: "$end"}}
+            - $group: {_id: $doc_id, count: {$sum: 1}, last_viewed: {$max: $at}}
+            - $lookup:
+                as: matched
+                from: books
+                let: {id: $_id}
+                pipeline:
+                  - {$match: {$expr: {$eq: [ $doc_id, $$id ]}}}
+                  - {$match: {status: {$eq: processed}}}
+                  - {$project: *schema.v2.books}
+            - $addFields: {matched.count: $count, matched.last_view: $last_viewed}
+            - $unwind: {path: $matched, preserveNullAndEmptyArrays: false}
+            - $replaceRoot: {newRoot: $matched}
+
+
+
+
