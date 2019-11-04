@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from dateutil import parser
 from eve import Eve
 from flask.json import jsonify
 from flask_cors import CORS
@@ -66,7 +67,7 @@ def clean_bad_dates(values: list):
         try:
             """Validate date value and convert to mongo-friendly"""
             # actual_value = parse(value["at"][key])
-            actual_value = datetime.fromisoformat(value["at"][key])
+            actual_value = parser.parse(value["at"][key])
             value["at"][key] = actual_value
             new_value.append(value)
         except (ValueError, TypeError):
@@ -101,6 +102,7 @@ def pre_views_get_callback(endpoint: str, pipeline: list):
             pipeline.pop(0)
             return
         set_default_times(times)
+    print(times)
     pass
 
 
