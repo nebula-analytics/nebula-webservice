@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from dateutil import parser
 from eve import Eve
 from flask.json import jsonify
-from flask_cors import CORS
 
 from utils.ConfigMap import ConfigMap, add_discovery_path
 
@@ -54,7 +53,6 @@ config["DOMAIN"]["joint"] = {
 }
 
 app = Eve(settings=config)
-CORS(app)
 
 
 def clean_bad_dates(values: list):
